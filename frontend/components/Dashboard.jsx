@@ -69,7 +69,7 @@ export default function Dashboard() {
   return (
     <main className="wrap">
       <h1>Inventory</h1>
-      <div className="sub">Riverside Motors · stock updates as actions are logged</div>
+      <div className="sub">Care Motors · stock updates as actions are logged</div>
 
       {error && (
         <div className="err" role="alert">
