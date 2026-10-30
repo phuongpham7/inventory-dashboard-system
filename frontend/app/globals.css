@@ -140,6 +140,98 @@ textarea {
   gap: 12px;
   margin: 12px 0 32px;
 }
+.collapse {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-align: left;
+}
+.chart {
+  overflow-x: auto;
+  background: var(--sf);
+  border: 1px solid var(--ln);
+  border-radius: 8px;
+  padding: 8px 8px 4px;
+  margin: 12px 0 8px;
+}
+.chart svg {
+  display: block;
+  width: 100%;
+  min-width: 520px;
+  height: auto;
+}
+.ch-grid {
+  stroke: var(--ln);
+  stroke-width: 1;
+}
+.ch-limit {
+  stroke: var(--wn);
+  stroke-width: 1.5;
+  stroke-dasharray: 5 4;
+}
+.ch-axis {
+  fill: var(--mu);
+  font-size: 13px;
+}
+.ch-txt {
+  fill: var(--ink);
+  font-size: 14px;
+  font-weight: 600;
+}
+rect.ch-n {
+  fill: var(--mu);
+  opacity: 0.4;
+}
+rect.ch-w {
+  fill: var(--wn);
+}
+rect.ch-ok {
+  fill: var(--ok);
+}
+.legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--mu);
+  margin: 0 0 32px;
+}
+.sw {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+.sw.ch-n {
+  background: var(--mu);
+  opacity: 0.4;
+}
+.sw.ch-w {
+  background: var(--wn);
+}
+.sw.ch-ok {
+  background: var(--ok);
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
 .tag {
   background: var(--sf);
   border: 1px solid var(--ln);

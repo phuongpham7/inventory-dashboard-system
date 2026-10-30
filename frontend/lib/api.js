@@ -56,6 +56,7 @@ export const api = {
   summary: (signal) => request("/vehicles/summary", { signal }),
   aging: (limit, signal) =>
     request("/vehicles/aging?limit=" + limit, { signal }),
+  distribution: (signal) => request("/vehicles/aging/distribution", { signal }),
   facets: (signal) => request("/vehicles/facets", { signal }),
   actions: (id, signal) => request("/vehicles/" + id + "/actions", { signal }),
   logAction: (id, body) =>

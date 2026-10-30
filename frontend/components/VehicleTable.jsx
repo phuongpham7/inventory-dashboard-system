@@ -1,5 +1,5 @@
 import { ageClass, money, vehicleName } from "../lib/format";
-import { ActionChip } from "./AgingPanel";
+import ActionChip from './ActionChip';
 
 export default function VehicleTable({ list, busy, onAct }) {
   return (

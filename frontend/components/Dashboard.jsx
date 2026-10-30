@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { api } from "../lib/api";
 import Filters from "./Filters";
-import AgingPanel from "./AgingPanel";
+import AgingChart from "./AgingChart";
 import VehicleTable from "./VehicleTable";
 import ActionDialog from "./ActionDialog";
 
@@ -20,7 +20,7 @@ export default function Dashboard() {
   const [page, setPage] = useState(1);
   const [list, setList] = useState(null);
   const [summary, setSummary] = useState(null);
-  const [aging, setAging] = useState([]);
+  const [dist, setDist] = useState(null);
   const [facets, setFacets] = useState({ makes: [], models: {} });
   const [error, setError] = useState(null);
   const [busy, setBusy] = useState(true);
@@ -33,12 +33,12 @@ export default function Dashboard() {
     const ac = new AbortController();
     Promise.all([
       api.summary(ac.signal),
-      api.aging(6, ac.signal),
+      api.distribution(ac.signal),
       api.facets(ac.signal),
     ])
-      .then(([s, a, f]) => {
+      .then(([s, d, f]) => {
         setSummary(s);
-        setAging(a);
+        setDist(d);
         setFacets(f);
         setError(null);
       })
@@ -122,7 +122,7 @@ export default function Dashboard() {
           ))}
       </div>
 
-      <AgingPanel aging={aging} onAct={setActive} onShowAll={showAging} />
+      <AgingChart dist={dist} count={summary?.aging} onShowAll={showAging} />
 
       <div className="bar" id="all-vehicles">
         <h2>All vehicles</h2>

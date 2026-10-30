@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { z } from "zod";
 import { Vehicle, VehicleAction, ACTION_STATUSES } from "./models.js";
 import { config } from "./config.js";
-import { ageOf, daysAgo } from "./age.js";
+import { ageOf, daysAgo, todayDate, DAY_MS } from "./age.js";
 
 export const router = Router();
 
@@ -178,6 +178,67 @@ router.get(
   }),
 );
 
+// Age distribution for the dashboard chart
+const BAND_EDGES = [0, 31, 61, 91, 121, 181];
+const BAND_LABELS = ["0–30", "31–60", "61–90", "91–120", "121–180", "Over 180"];
+router.get(
+  "/vehicles/aging/distribution",
+  wrap(async (req, res) => {
+    const rows = await Vehicle.aggregate([
+      { $match: baseFilter(req.dealershipId) },
+      {
+        $addFields: {
+          age: {
+            $floor: {
+              $divide: [{ $subtract: [todayDate(), "$date_received"] }, DAY_MS],
+            },
+          },
+        },
+      },
+      {
+        $lookup: {
+          from: "vehicle_actions",
+          localField: "_id",
+          foreignField: "vehicle_id",
+          pipeline: [{ $limit: 1 }, { $project: { _id: 1 } }],
+          as: "acts",
+        },
+      },
+      {
+        $bucket: {
+          groupBy: "$age",
+          boundaries: [...BAND_EDGES, 1_000_000],
+          default: "other",
+          output: {
+            total: { $sum: 1 },
+            with_action: {
+              $sum: { $cond: [{ $gt: [{ $size: "$acts" }, 0] }, 1, 0] },
+            },
+          },
+        },
+      },
+    ]);
+    const byMin = new Map(
+      rows.filter((r) => r._id !== "other").map((r) => [r._id, r]),
+    );
+    const buckets = BAND_EDGES.map((min, i) => {
+      const r = byMin.get(min);
+      const total = r?.total || 0;
+      const withAction = r?.with_action || 0;
+      return {
+        label: BAND_LABELS[i],
+        min,
+        max: i + 1 < BAND_EDGES.length ? BAND_EDGES[i + 1] - 1 : null,
+        aging: min > config.agingDays,
+        total,
+        with_action: withAction,
+        no_action: total - withAction,
+      };
+    });
+    res.json({ aging_days: config.agingDays, buckets });
+  }),
+);
+
 router.get(
   "/vehicles/facets",
   wrap(async (req, res) => {
@@ -244,13 +305,11 @@ router.post(
       { vehicle_id: String(v._id), action: body.action_status },
       "action logged",
     );
-    res
-      .status(201)
-      .json({
-        id: String(doc._id),
-        action_status: doc.action_status,
-        notes: doc.notes,
-        created_at: doc.created_at,
-      });
+    res.status(201).json({
+      id: String(doc._id),
+      action_status: doc.action_status,
+      notes: doc.notes,
+      created_at: doc.created_at,
+    });
   }),
 );
