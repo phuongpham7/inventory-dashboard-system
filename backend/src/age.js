@@ -6,4 +6,7 @@ const todayStart = () => {
 };
 
 export const daysAgo = (d) => new Date(todayStart() - d * DAY);
-export const ageOf = (date) => Math.floor((todayStart() - new Date(date).getTime()) / DAY);
+export const ageOf = (date) =>
+  Math.floor((todayStart() - new Date(date).getTime()) / DAY);
+export const DAY_MS = DAY;
+export const todayDate = () => new Date(todayStart());
