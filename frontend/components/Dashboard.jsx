@@ -5,6 +5,7 @@ import Filters from "./Filters";
 import AgingChart from "./AgingChart";
 import VehicleTable from "./VehicleTable";
 import ActionDialog from "./ActionDialog";
+import HealthPanel from "./HealthPanel";
 
 const PAGE_SIZE = 12;
 const DEFAULT_FILTERS = {
@@ -80,9 +81,14 @@ export default function Dashboard() {
 
   return (
     <main className="wrap">
-      <h1>Inventory</h1>
-      <div className="sub">
-        Care Motors · stock updates as actions are logged
+      <div className="bar">
+        <div>
+          <h1>Inventory</h1>
+          <div className="sub">
+            Care Motors · stock updates as actions are logged
+          </div>
+        </div>
+        <HealthPanel />
       </div>
 
       {error && (

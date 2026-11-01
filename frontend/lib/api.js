@@ -1,3 +1,5 @@
+import { record } from "./telemetry";
+
 export const ACTIONS = [
   "Price Reduction Planned",
   "Transfer to Another Lot",
@@ -15,13 +17,25 @@ export class ApiError extends Error {
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Reads retry with exponential backoff on network or 5xx errors. Writes never retry,
-// so a slow response cannot create a duplicate action. The request id ties the browser
-// call to the backend log line for the same request.
-async function request(path, { method = "GET", body, signal } = {}) {
+async function request(
+  path,
+  { method = "GET", body, signal, silent = false } = {},
+) {
   const retries = method === "GET" ? 2 : 0;
   const rid = globalThis.crypto?.randomUUID?.() || String(Date.now());
   for (let n = 0; ; n++) {
+    const t0 = performance.now();
+    const note = (status, error) =>
+      !silent &&
+      record({
+        method,
+        path,
+        status,
+        ms: Math.round(performance.now() - t0),
+        request_id: rid,
+        attempt: n + 1,
+        ...(error ? { error } : {}),
+      });
     try {
       const res = await fetch("/api" + path, {
         method,
@@ -33,14 +47,13 @@ async function request(path, { method = "GET", body, signal } = {}) {
         const j = await res.json().catch(() => ({}));
         throw new ApiError(res.status, j.error || res.statusText);
       }
-      return await res.json();
+      const data = await res.json();
+      note(res.status);
+      return data;
     } catch (e) {
-      if (
-        e.name === "AbortError" ||
-        (e.status && e.status < 500) ||
-        n >= retries
-      )
-        throw e;
+      if (e.name === "AbortError") throw e;
+      note(e.status || 0, e.message);
+      if ((e.status && e.status < 500) || n >= retries) throw e;
       await sleep(250 * 2 ** n);
     }
   }
@@ -61,4 +74,5 @@ export const api = {
   actions: (id, signal) => request("/vehicles/" + id + "/actions", { signal }),
   logAction: (id, body) =>
     request("/vehicles/" + id + "/actions", { method: "POST", body }),
+  health: () => request("/health", { silent: true }),
 };
