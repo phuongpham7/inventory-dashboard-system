@@ -3,6 +3,10 @@ import { createApp } from "./app.js";
 import { config } from "./config.js";
 import { logger } from "./logger.js";
 
+import { assertAuthConfig } from "./auth.js";
+
+assertAuthConfig();
+
 await mongoose.connect(config.mongoUri, {
   maxPoolSize: 20,
   serverSelectionTimeoutMS: 5000,

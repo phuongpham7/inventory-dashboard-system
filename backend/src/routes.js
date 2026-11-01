@@ -4,6 +4,7 @@ import { z } from "zod";
 import { Vehicle, VehicleAction, ACTION_STATUSES } from "./models.js";
 import { config } from "./config.js";
 import { ageOf, daysAgo, todayDate, DAY_MS } from "./age.js";
+import { requireRole } from "./auth.js";
 
 export const router = Router();
 
@@ -278,6 +279,7 @@ router.get(
 
 router.post(
   "/vehicles/:id/actions",
+  requireRole("manager", "admin"),
   wrap(async (req, res) => {
     if (!mongoose.isValidObjectId(req.params.id))
       throw new HttpError(400, "Invalid vehicle id");
@@ -299,7 +301,7 @@ router.post(
       ...body,
       vehicle_id: v._id,
       dealership_id: req.dealershipId,
-      created_by: req.header("x-user-id") || "manager",
+      created_by: req.user.id,
     });
     req.log.info(
       { vehicle_id: String(v._id), action: body.action_status },

@@ -11,6 +11,7 @@ import { Vehicle } from "./models.js";
 import { config } from "./config.js";
 import { daysAgo } from "./age.js";
 import { logger } from "./logger.js";
+import { authenticate } from "./auth.js";
 
 // ---- Metrics (Prometheus) ----
 client.collectDefaultMetrics();
@@ -36,12 +37,6 @@ new client.Gauge({
     }
   },
 });
-
-// Tenant scope. In production this comes from a verified token claim (OIDC/JWT), never a header.
-const tenant = (req, _res, next) => {
-  req.dealershipId = req.header("x-dealership-id") || "dealership-1";
-  next();
-};
 
 export function createApp() {
   const app = express();
@@ -96,7 +91,7 @@ export function createApp() {
       standardHeaders: true,
       legacyHeaders: false,
     }),
-    tenant,
+    authenticate,
     router,
   );
 
@@ -107,12 +102,10 @@ export function createApp() {
   app.use((err, req, res, _next) => {
     const status = err.status || 500;
     if (status >= 500) req.log.error({ err }, "unhandled error");
-    res
-      .status(status)
-      .json({
-        error: status >= 500 ? "Internal server error" : err.message,
-        request_id: req.id,
-      });
+    res.status(status).json({
+      error: status >= 500 ? "Internal server error" : err.message,
+      request_id: req.id,
+    });
   });
   return app;
 }
